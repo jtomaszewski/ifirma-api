@@ -69,7 +69,7 @@ describe 'invoices' do
         "TypStawkiVat"    => "PRC"
       }]
     }
-    @encoded_body = Yajl::Encoder.encode(@body)
+    @encoded_body = JSON.dump(@body)
   end
 
   let(:ifirma) { ifirma = Ifirma.new(:config => { :username => "drogus", :invoices_key => "AABB" }) }
@@ -79,12 +79,11 @@ describe 'invoices' do
       'Accept' => 'application/json',
       'Authentication' => 'IAPIS user=drogus, hmac-sha1=32fd2bb0d4746c286a0a2cf68f0d224bdc29b9f8',
       'Content-Type' => 'application/json; charset=utf-8',
-      'User-Agent' => 'Ruby'
     }
 
     stub_request(:post, "https://www.ifirma.pl/iapi/fakturakraj.json").
       with(:headers => headers, :body => @encoded_body).
-      to_return(:body=>{"response"=>{"Kod"=>0, "Informacja"=>"Faktura została pomyślnie dodana.", "Identyfikator"=>5721327}})
+      to_return(:body => {"response"=>{"Kod"=>0, "Informacja"=>"Faktura została pomyślnie dodana.", "Identyfikator"=>5721327}}.to_json, :headers => {"Content-Type" => "application/json"})
 
     response = ifirma.create_invoice(@payload)
     response.should be_success
@@ -98,18 +97,17 @@ describe 'invoices' do
     payload_tmp.delete(:type)
     body_tmp = @body
     body_tmp.delete("LiczOd")
-    encoded_body = Yajl::Encoder.encode(body_tmp)
+    encoded_body = JSON.dump(body_tmp)
 
     headers = {
       'Accept' => 'application/json',
       'Authentication' => 'IAPIS user=drogus, hmac-sha1=a7567c201a87bd5ef4a386408e3387fab1d4231c',
       'Content-Type' => 'application/json; charset=utf-8',
-      'User-Agent' => 'Ruby'
     }
 
     stub_request(:post, "https://www.ifirma.pl/iapi/fakturakraj.json").
       with(:headers => headers, :body => encoded_body).
-      to_return(:body=>{"response"=>{"Kod"=>401, "Informacja"=>"Niepoprawna nazwa użytkownika."}})
+      to_return(:body => {"response"=>{"Kod"=>401, "Informacja"=>"Niepoprawna nazwa użytkownika."}}.to_json, :headers => {"Content-Type" => "application/json"})
 
     response = ifirma.create_invoice(payload_tmp)
     response.should be_error
@@ -122,16 +120,15 @@ describe 'invoices' do
       'Accept' => 'application/json',
       'Authentication' => 'IAPIS user=drogus, hmac-sha1=a09fb9423c8145e873e603d5df392cd03ac20023',
       'Content-Type' => 'application/json; charset=utf-8',
-      'User-Agent' => 'Ruby'
     }
 
     stub_request(:get, "https://www.ifirma.pl/iapi/fakturakraj/5721327.pdf").
-      with(:header => header).
+      with(:headers => header).
       to_return(:body => "aaa")
 
     stub_request(:get, "https://www.ifirma.pl/iapi/fakturakraj/5721327.json").
-      with(:header => header).
-      to_return(:body => {"response" => {}})
+      with(:headers => header).
+      to_return(:body => {"response" => {}}.to_json, :headers => {"Content-Type" => "application/json"})
 
     response = ifirma.get_invoice(5721327)
     response.should be_success
@@ -143,16 +140,15 @@ describe 'invoices' do
       'Accept' => 'application/json',
       'Authentication' => 'IAPIS user=drogus, hmac-sha1=854cc130ae59bd398aee15d9b86971e94526484a',
       'Content-Type' => 'application/json; charset=utf-8',
-      'User-Agent' => 'Ruby'
     }
 
     stub_request(:get, "https://www.ifirma.pl/iapi/fakturakraj/0.pdf").
-      with(:header => header).
-      to_return(:body => {"response"=>"aaa"} )
+      with(:headers => header).
+      to_return(:body => {"response"=>"aaa"}.to_json, :headers => {"Content-Type" => "application/json"})
 
     stub_request(:get, "https://www.ifirma.pl/iapi/fakturakraj/0.json").
-      with(:header => header).
-      to_return(:body => {"response"=>{"Kod"=>500, "Informacja"=>"Faktura/rachunek nie istnieje."}})
+      with(:headers => header).
+      to_return(:body => {"response"=>{"Kod"=>500, "Informacja"=>"Faktura/rachunek nie istnieje."}}.to_json, :headers => {"Content-Type" => "application/json"})
 
     response = ifirma.get_invoice(0)
     response.should be_error

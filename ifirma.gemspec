@@ -8,13 +8,11 @@ Gem::Specification.new do |gem|
   gem.summary       = %q{API wrapper for ifirma.pl}
   gem.homepage      = ""
 
-  gem.add_dependency 'faraday', '~> 0.7.4'
-  gem.add_dependency 'faraday_middleware', '~> 0.7.0'
-  gem.add_dependency 'faraday-stack', '~> 0.1.3'
-  gem.add_dependency 'yajl-ruby', '~> 1.0'
-  gem.add_development_dependency 'rake', '~> 0.9'
-  gem.add_development_dependency 'rspec', '~> 2.6'
-  gem.add_development_dependency 'webmock', '~> 1.7'
+  gem.add_dependency 'faraday', '~> 0.9.2'
+  gem.add_dependency 'faraday_middleware'
+  gem.add_development_dependency 'rake'
+  gem.add_development_dependency 'rspec'
+  gem.add_development_dependency 'webmock'
 
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   gem.files         = `git ls-files`.split("\n")
