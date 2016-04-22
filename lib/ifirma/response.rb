@@ -2,13 +2,14 @@ class Ifirma
   class Response
     attr_reader :code, :info, :invoice_id, :full_number, :body, :response
 
-    def initialize(options = {})
-      @body = options
-      if options.instance_of?(Hash)
-        @code = options.delete("Kod")
-        @info = options.delete("Informacja")
-        @invoice_id = options.delete("Identyfikator")
-        @full_number = options.delete("PelnyNumer")
+    def initialize(response)
+      @response = response
+
+      if response.body.instance_of?(Hash) && response.body["response"]
+        @code = response.body["response"]["Kod"]
+        @info = response.body["response"]["Informacja"]
+        @invoice_id = response.body["response"]["Identyfikator"]
+        @full_number = response.body["response"]["PelnyNumer"]
       end
     end
 
@@ -18,6 +19,10 @@ class Ifirma
 
     def error?
       @code > 0
+    end
+
+    def body
+      response.body
     end
   end
 end

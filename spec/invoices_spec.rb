@@ -115,37 +115,36 @@ describe 'invoices' do
     response.info.should_not be_nil
   end
 
-  it "get an innovice" do
+  it "getting an invoice, returns a successful response" do
     header = {
       'Accept' => 'application/json',
       'Authentication' => 'IAPIS user=drogus, hmac-sha1=a09fb9423c8145e873e603d5df392cd03ac20023',
       'Content-Type' => 'application/json; charset=utf-8',
     }
-
-    stub_request(:get, "https://www.ifirma.pl/iapi/fakturakraj/5721327.pdf").
-      with(:headers => header).
-      to_return(:body => "aaa")
-
     stub_request(:get, "https://www.ifirma.pl/iapi/fakturakraj/5721327.json").
       with(:headers => header).
       to_return(:body => {"response" => {}}.to_json, :headers => {"Content-Type" => "application/json"})
+
+    header = {
+      'Accept' => 'application/json',
+      'Authentication' => 'IAPIS user=drogus, hmac-sha1=854cc130ae59bd398aee15d9b86971e94526484a',
+      'Content-Type' => 'application/json; charset=utf-8',
+    }
+    stub_request(:get, "https://www.ifirma.pl/iapi/fakturakraj/5721327.pdf").
+      with(:headers => header).
+      to_return(:body => "aaa")
 
     response = ifirma.get_invoice(5721327)
     response.should be_success
     response.body.should == 'aaa'
   end
 
-  it "get no exists innovice" do
+  it "getting an invoice which doesn't exists, returns an error response" do
     header = {
       'Accept' => 'application/json',
-      'Authentication' => 'IAPIS user=drogus, hmac-sha1=854cc130ae59bd398aee15d9b86971e94526484a',
+      'Authentication' => 'IAPIS user=drogus, hmac-sha1=c782e1d21e81daba4a432ea89ead398b8fe246e3',
       'Content-Type' => 'application/json; charset=utf-8',
     }
-
-    stub_request(:get, "https://www.ifirma.pl/iapi/fakturakraj/0.pdf").
-      with(:headers => header).
-      to_return(:body => {"response"=>"aaa"}.to_json, :headers => {"Content-Type" => "application/json"})
-
     stub_request(:get, "https://www.ifirma.pl/iapi/fakturakraj/0.json").
       with(:headers => header).
       to_return(:body => {"response"=>{"Kod"=>500, "Informacja"=>"Faktura/rachunek nie istnieje."}}.to_json, :headers => {"Content-Type" => "application/json"})

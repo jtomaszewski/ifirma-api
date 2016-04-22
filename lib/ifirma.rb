@@ -20,23 +20,22 @@ class Ifirma
 
   [:get, :post, :put, :delete, :head].each do |method|
     define_method(method) do |*args, &block|
-      connection.send(method, *args, &block)
+      response = connection.send(method, *args, &block)
+      Response.new(response)
     end
   end
 
   def create_invoice(attrs)
-    response = post("/iapi/fakturakraj.json", normalize_attributes_for_request(attrs))
-    Response.new(response.body["response"])
+    post("/iapi/fakturakraj.json", normalize_attributes_for_request(attrs))
   end
 
   def get_invoice(invoice_id, type = 'pdf')
-    json_invoice = get("/iapi/fakturakraj/#{invoice_id}.json")
-    response = Response.new(json_invoice.body["response"])
+    response = get("/iapi/fakturakraj/#{invoice_id}.json")
     if response.success?
-      response = get("/iapi/fakturakraj/#{invoice_id}.#{type}")
-      response = Response.new(response.body)
+      get("/iapi/fakturakraj/#{invoice_id}.#{type}")
+    else
+      response
     end
-    response
   end
 
   ATTRIBUTES_MAP = {
@@ -110,19 +109,23 @@ private
 
   def normalize_attributes_for_request(attrs, result = {}, map = ATTRIBUTES_MAP, value_map = VALUE_MAP)
     attrs.each do |key, value|
-      if value.is_a? Array
-        nested_key = map[key][key]
-        result[nested_key] = []
-        value.each do |item|
-          result[nested_key] << normalize_attributes_for_request(item, {}, map[key], value_map[key] || {})
+      if map[key]
+        if value.is_a? Array
+          nested_key = map[key][key]
+          result[nested_key] = []
+          value.each do |item|
+            result[nested_key] << normalize_attributes_for_request(item, {}, map[key], value_map[key] || {})
+          end
+        elsif value.is_a? Hash
+          nested_key = map[key][key]
+          result[nested_key] = {}
+          normalize_attributes_for_request(attrs[key], result[nested_key], map[key], value_map[key] || {})
+        else
+          translated = map[key]
+          result[translated] = normalize_attribute(value, value_map[key])
         end
-      elsif value.is_a? Hash
-        nested_key = map[key][key]
-        result[nested_key] = {}
-        normalize_attributes_for_request(attrs[key], result[nested_key], map[key], value_map[key] || {})
       else
-        translated = map[key]
-        result[translated] = normalize_attribute(value, value_map[key])
+        result[key] = value
       end
     end
 
