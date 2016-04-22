@@ -5,7 +5,7 @@ class Ifirma
     def initialize(response)
       @response = response
 
-      if response.body.instance_of?(Hash) && response.body["response"]
+      if response.body.instance_of?(Hash) && response.body["response"] && response.body["response"].instance_of?(Hash)
         @code = response.body["response"]["Kod"]
         @info = response.body["response"]["Informacja"]
         @invoice_id = response.body["response"]["Identyfikator"]
